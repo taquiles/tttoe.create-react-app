@@ -1,0 +1,382 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+
+// import {PLAYERS, GAME_STATUS} from './constants';
+
+// Players
+const PLAYERS = {
+    FIRST_PLAYER : 0,
+    SECOND_PLAYER : 1
+}
+
+// Game Status Constants
+//
+const GAME_STATUS = {    
+    DREW_GAME : 2,
+    ON_GOING : 3,
+    WINNER_FOUND : 4,
+}
+
+class ReStartResetButton extends React.Component {  
+
+  render () {
+    return (      
+      <button onClick={this.props.onClick}>
+        Reset Game
+       </button>
+    )
+  }
+};
+
+const NextMoveStatus = (props) => {
+  let status_txt= '';
+  
+  if (props.statusGame === GAME_STATUS.DREW_GAME) {
+    status_txt = "Drew Game. Click Restart to play once again"
+  } else if (props.statusGame === GAME_STATUS.WINNER_FOUND) {
+    status_txt = 'Winner: ' + props.player.nickName + ' - ' + props.player.symbolMark;
+  } else {
+    status_txt = 'Next player: ' + props.player.nickName + ' - ' + props.player.symbolMark;
+  }
+
+  return (<div><b>{status_txt}</b></div>)
+};
+
+
+const HistoryView = (props) => {
+  return ( 
+    props.historyGame.map ((historyItem, idx) => {
+      return (
+        <dl key={idx}>
+          <div onClick={()=>props.onClick (idx) } >
+            Move - {idx} - {historyItem.board} - {historyItem.timeStamp} 
+          </div>
+        </dl>
+      )
+    })
+  )
+}
+
+// ####################################################################
+// Square Component
+// 
+var Square = (props) => ( 
+  <button className= "square" onClick = {props.onClick}>
+    {props.value}
+  </button>
+);
+
+// ####################################################################
+// Board Component
+// 
+
+class Board extends React.Component {
+
+  renderSquare(i) {
+    return (
+      <Square 
+        value={this.props.boardGame[i]}
+        onClick={() => this.props.onClick(i)}
+      />
+    );
+  }
+
+  boardTemplate () {
+    let boardGame = this.props.boardGame;
+    let boardResult= boardGame.map((element, idx)=> {      
+      let square = (
+        <Square 
+          key={idx}                
+          value={this.props.boardGame[idx]}
+          onClick={() => this.props.onClick(idx)}
+        />
+      )
+
+      if (!((idx+1)%4) && idx<9 && idx>0 ) {               
+        square = <div key={idx} className="board-row">{square}</div>
+      }
+      return (square)                                                     
+    })
+    return boardResult;
+  }
+
+  render() {    
+    return ( 
+      <div>        
+        <div className="board-row">
+          {this.boardTemplate ()}  
+        </div>
+      </div>      
+    );
+  }
+}
+
+
+// ####################################################################
+// Game Component
+// 
+class Game extends React.Component {
+  
+  constructor(props) {
+
+    super(props);
+    
+    this.state = {
+      historyGame:  [
+        {
+          board: Array(9).fill(null),
+          timeStamp : new Date(),
+        }
+      ],
+      players : [
+        {
+          symbolMark : 'X',
+          nickName : 'JohnPassos'
+        },
+        {
+          symbolMark : 'O',
+          nickName : 'ErnestHemingway'
+        }
+      ],            
+      currentBoardHistory: 0,
+      statusGame : GAME_STATUS.ON_GOING,
+      numberOfPlays : 0,
+      numberOfSquares : 9,
+      stepNumber : 0,  // ?!?!?          
+      currentPlayer : 0,   
+    };
+  }
+
+  numberOfPlaysLeft (playerID, numberOfPlays, numberOfSquares) {
+    let result;    
+    const totalPlaysLeft= numberOfSquares - numberOfPlays;
+
+    result = Math.floor((totalPlaysLeft)/2);
+    result = playerID===PLAYERS.FIRST_PLAYER ? result+(totalPlaysLeft%2) : result;
+    console.log ('');
+    console.log ('## numberOfPlaysLeft.playerID= ', playerID);
+    console.log ('## numberOfPlaysLeft.numberOfPlays= ', numberOfPlays);
+    console.log ('## numberOfPlaysLeft.numberOfSquares= ', numberOfSquares);
+    console.log ('## numberOfPlaysLeft.result= ', result);
+    
+    return (result);
+  }
+
+  lineOpen (board, line) {
+    const FIRST_PLAYER_SYMBOL_MARK= this.state.players[PLAYERS.FIRST_PLAYER].symbolMark;
+    const SECOND_PLAYER_SYMBOL_MARK= this.state.players[PLAYERS.SECOND_PLAYER].symbolMark;
+    
+    let result = 0;
+    
+    result = line.reduce ((result, square, idx) => {
+      result += board[square]===FIRST_PLAYER_SYMBOL_MARK ? 10 : 0;
+      result += board[square]===SECOND_PLAYER_SYMBOL_MARK ? 100 : 0;
+      result += board[square]===null ? 1 : 0;
+
+      return (result)
+    }, 0);
+
+    return (result); 
+  }
+
+
+  // Function : statusGame 
+  //  0 - first wins
+  //  1-  Second wins
+  //  2-  drew Game
+  //  3-  On Going
+  // 
+  // TODO: Is it worst to verify if "number of plays" is less than "open Lines"?
+  //
+  statusGame (board, numberOfPlays, numberOfSquares) {
+   
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    let result= GAME_STATUS.DREW_GAME;
+    let idx = 0;
+    let score, playerID;
+
+    let resultPerPlayer = [
+      {
+        numberOfOpenLines: 0,
+        numberOfPlaysLeft: 0
+      },
+      {
+        numberOfOpenLines: 0,
+        numberOfPlaysLeft: 0
+      }
+    ];
+    
+    resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfPlaysLeft= 
+      this.numberOfPlaysLeft(PLAYERS.FIRST_PLAYER, numberOfPlays, numberOfSquares);
+    resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfPlaysLeft=
+      this.numberOfPlaysLeft(PLAYERS.SECOND_PLAYER, numberOfPlays, numberOfSquares);
+    
+    do {
+      const sqrNumberOfSquares = Math.sqrt (this.state.numberOfSquares)
+      let lineScore = this.lineOpen (board, lines[idx]);
+      
+      // playerID= Math.floor (lineScore/tempNum)      
+      playerID = (lineScore<100) ? 0 : 1
+      score = (lineScore%(Math.pow(10, (playerID+1)))) ^ sqrNumberOfSquares;      
+      
+      // there is a winner, return it
+      if (score===3) {
+        // there is a winner, return it
+        result = GAME_STATUS.WINNER_FOUND;
+      } else if (score===0) { 
+        // All empty squares; 
+        // counts as open lines for both users;
+        result = GAME_STATUS.ON_GOING;
+        resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfOpenLines++;        
+        resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfOpenLines++;        
+      } else if (score<3) {
+        result = GAME_STATUS.ON_GOING;
+        resultPerPlayer[playerID].numberOfOpenLines++;        
+      }
+      
+      idx++
+    } while (result!==GAME_STATUS.WINNER_FOUND && idx<lines.length)
+
+    console.log ('');
+    console.log ('## StatusGame.playerID=', playerID);
+    console.log ('## StatusGame.score=', score);
+    console.log ('## StatusGame.result=', result);
+    console.log ('## StatusGame.resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfOpenLines=', resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfOpenLines);
+    console.log ('## StatusGame.resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfOpenLines=', resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfOpenLines);
+    console.log ('## StatusGame.resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfPlaysLeft=', resultPerPlayer[PLAYERS.FIRST_PLAYER].numberOfPlaysLeft);
+    console.log ('## StatusGame.resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfPlaysLeft=', resultPerPlayer[PLAYERS.SECOND_PLAYER].numberOfPlaysLeft);
+    
+    return result;
+  }
+
+
+  handlerClickResetGame () {
+    let state;
+
+    state = {
+      historyGame:  [
+        {
+          board: Array(9).fill(null),
+          timeStamp : new Date(),
+        }
+      ],
+      players : [
+        {
+          symbolMark : 'X',
+          nickName : 'JohnPassos'
+        },
+        {
+          symbolMark : 'O',
+          nickName : 'ErnestHemingway'
+        }
+      ],
+      currentBoardHistory : 0,  
+      statusGame : GAME_STATUS.ON_GOING,
+      numberOfPlays : 0,
+      numberOfSquares : 9,
+      stepNumber : 0,  // ?!?!?          
+      currentPlayer : 0, 
+    }
+
+    this.setState (state);
+  }
+  
+  // Todo : Is Array.slice the most effective way to create a new array, for immutable state...
+  // Todo : And, if 'playerID' wa put in place of 'playerSymbolMark' on 'currentBoard[i]';
+  //
+  handleClick (i) {
+    const currentBoardHistory = this.state.historyGame.length-1;
+    const historyGame = this.state.historyGame;
+    const currentBoard = historyGame[currentBoardHistory].board.slice();
+    const playerID = this.state.currentPlayer;
+    
+    const playerSymbolMark = this.state.players[playerID].symbolMark;
+    let numberOfPlays = this.state.numberOfPlays;
+    const numberOfSquares = this.state.numberOfSquares;      
+    
+    let statusGame = this.state.statusGame;
+    
+    let state = {};
+    
+    if (!currentBoard[i] && 
+        statusGame===GAME_STATUS.ON_GOING &&
+        this.state.currentBoardHistory === currentBoardHistory ) {  
+      
+      currentBoard[i] = playerSymbolMark;
+      historyGame.push (
+        {
+          board : currentBoard,
+          timeStamp : new Date()
+        }
+      );
+            
+      numberOfPlays = numberOfPlays+1;
+      
+      statusGame= this.statusGame (currentBoard, numberOfPlays, numberOfSquares);
+      console.log ('## handlerClick.status=', statusGame);
+      console.log ('## handlerClick.numberOfPlays=', numberOfPlays);
+       
+      state.currentPlayer = playerID ^ 1;       //Alternate/Change player;
+      state.numberOfPlays = numberOfPlays;
+      state.historyGame = historyGame;
+      state.currentBoardHistory = historyGame.length-1
+      state.statusGame = statusGame;
+    }
+
+    this.setState (state);
+  }
+
+
+  handleClickHistoryView(i) {
+    let state= this.state;
+    state.currentBoardHistory= i;
+    this.setState (state);
+  }
+
+
+  render() {        
+    const historyGame = this.state.historyGame.slice()
+    const currentBoardHistory = this.state.currentBoardHistory;
+    const currentBoard = historyGame[currentBoardHistory].board;
+    const currentPlayerID = this.state.currentPlayer;
+    const currentPlayerObj = this.state.players[currentPlayerID];
+    const statusGame = this.state.statusGame;      
+    
+    return (
+      <div className = "game">
+        <div className = "game-board">
+          <Board 
+            onClick={ i => this.handleClick(i) }
+            player = {currentPlayerID}
+            boardGame = {currentBoard}        
+          />
+        </div>
+        <div className="game-info">          
+          <NextMoveStatus  statusGame={statusGame} player={currentPlayerObj} />
+          <ReStartResetButton onClick={() => this.handlerClickResetGame()} />          
+          <HistoryView historyGame={historyGame} onClick={ i => this.handleClickHistoryView(i)} />          
+        </div>
+      </div>
+    );
+  }
+}
+
+
+// ####################################################################
+// Rendering
+// 
+
+ReactDOM.render(
+  <Game />,
+  document.getElementById('root')
+);
