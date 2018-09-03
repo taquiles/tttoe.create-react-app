@@ -10,9 +10,9 @@ import BoardTemplate from './BoardTemplate';
 
 // Material.ui 
 import Button from '@material-ui/core/Button';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+// import PropTypes from 'prop-types';
+// import { withStyles } from '@material-ui/core/styles';
+// import Typography from '@material-ui/core/Typography';
 
 // Players
 const PLAYERS = {

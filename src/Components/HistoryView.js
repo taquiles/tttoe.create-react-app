@@ -2,7 +2,8 @@
 import React from 'react';
 
 // Material.ui 
-import Paper from '@material-ui/core/Paper';import Button from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
+// import Button from '@material-ui/core/Button';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
