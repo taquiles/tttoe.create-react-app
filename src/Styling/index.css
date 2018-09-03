@@ -1,0 +1,48 @@
+body {    
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    margin: 20px;
+    width: 400px;
+    height: 400px;     
+    font: .9em/1.2 Arial, Helvetica, sans-serif;    
+  }
+  
+  .board-template {
+    display: grid;    
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .status {
+    margin-bottom: 10px;
+  }
+  
+  .square {
+    text-align: center;
+    width: 2em;
+    height: 2em;
+    line-height: 2em;
+    border-radius: 0.5em;
+    padding: 0.1em;
+    font-size: 2em;    
+    background-color: rgb(207, 220, 232);
+    border: 0.2em solid rgb(79,185,227);
+  }
+  
+  .square:hover {
+    border: 0.1em solid darkblue;
+    text-shadow: 0 0 0.1em;
+    font-weight: bold;
+  }
+  
+  .kbd-navigation .square:focus {
+    background: #ddd;
+  }
+  
+  .game {
+    
+  }
+  
+  .game-info {
+    margin-left: 20px;
+  }
+  
