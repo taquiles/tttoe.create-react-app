@@ -20,4 +20,4 @@ deploy:
   region: eu-west-1
   local_dir: build
   on:
-    repo: taquiles/tic-tac-toe
+    repo: taquiles/tttoe
