@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-export LAMBDA_FUNCTION='tic-tac-toe'
+export LAMBDA_FUNCTION='tttoe'
 export FUNCTION_FOLDER=$(pwd)
 export AWS_PROFILE=claudia
 

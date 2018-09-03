@@ -1,5 +1,5 @@
 
-FROM node:8.10 as tic-tac-toe
+FROM node:8.10 as tttoe
 
 ADD yarn.lock /yarn.lock
 ADD package.json /package.json
