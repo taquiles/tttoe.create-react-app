@@ -5,7 +5,10 @@ case $1 in
   start)
     # The '| cat' is to trick Node that this is an non-TTY terminal
     # then react-scripts won't clear the console.
-    npm start --loglevel debug | cat
+    yarn start | cat
+    ;;
+  dev) 
+    yarn dev
     ;;
   build)
     yarn build

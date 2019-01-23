@@ -4,7 +4,10 @@ node_js:
 install:
 - npm cache verify
 - npm install
-cache:
+
+
+## Travis CI can cache content that does not often change, 
+## https://docs.travis-ci.com/user/caching/cache:cache:
   directories:
   - node_modules
 script:

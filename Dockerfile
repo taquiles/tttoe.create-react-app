@@ -1,5 +1,5 @@
 
-FROM node:8.10 as tttoe
+FROM node:8.10 as LAMBDA_FUNCTION
 
 ADD yarn.lock /yarn.lock
 ADD package.json /package.json
@@ -23,7 +23,7 @@ RUN apt-get update &&  \
 WORKDIR /app
 #ADD . /app
 
-EXPORT 9229
+#EXPORT 9229
 
 ENTRYPOINT ["/bin/bash", "/app/run.sh"]
 CMD ["start"]

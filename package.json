@@ -9,9 +9,11 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4",
+    "source-map-explorer": "^1.6.0",
     "typeface-roboto": "0.0.54"
   },
   "scripts": {
+    "analyze": "source-map-explorer build/static/js/main.*",
     "start": "node --inspect=172.17.0.2:9222  node_modules/.bin/react-scripts  start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --coverage",
